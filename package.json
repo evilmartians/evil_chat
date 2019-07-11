@@ -5,6 +5,7 @@
     "@rails/webpacker": "^4.0.7"
   },
   "devDependencies": {
+    "@arkweid/lefthook": "^0.6.0",
     "babel-eslint": "^10.0.2",
     "eslint": "^6.0.1",
     "eslint-config-airbnb-base": "^13.2.0",
