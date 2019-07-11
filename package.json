@@ -2,7 +2,8 @@
   "name": "evil_chat",
   "private": true,
   "dependencies": {
-    "@rails/webpacker": "^4.0.7"
+    "@rails/webpacker": "^4.0.7",
+    "normalize.css": "^8.0.1"
   },
   "devDependencies": {
     "@arkweid/lefthook": "^0.6.0",
