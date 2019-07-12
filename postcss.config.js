@@ -3,6 +3,7 @@
 module.exports = {
   plugins: [
     require("postcss-import"),
+    require("postcss-inline-svg"),
     require("postcss-flexbugs-fixes"),
     require("postcss-preset-env")({
       autoprefixer: {
