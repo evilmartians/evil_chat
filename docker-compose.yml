@@ -1,0 +1,87 @@
+version: '3.4'
+
+services:
+  app: &app
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        RUBY_VERSION: '2.6'
+        PG_MAJOR: '10'
+        NODE_MAJOR: '11'
+        BUNDLER_VERSION: '2.0.2'
+        YARN_VERSION: '1.19.1'
+    image: brainwashing-dev:1.0.0
+    volumes:
+      - .:/app:cached
+    tmpfs:
+      - /tmp
+
+  backend: &backend
+    <<: *app
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    volumes:
+      - .:/app:cached
+      # We store Rails cache and gems in volumes to get speed up on Docker for Mac
+      - rails_cache:/app/tmp/cache
+      - bundle:/bundle
+    environment:
+      HISTFILE: /app/log/.bash_history
+      MALLOC_ARENA_MAX: 2
+      WEB_CONCURRENCY: 1
+      EDITOR: vim
+      RAILS_ENV: ${RAILS_ENV:-development}
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432
+      REDIS_URL: redis://redis:6379/
+      WEBPACKER_DEV_SERVER_HOST: webpacker
+      DISABLE_SPRING: 1
+    depends_on:
+      - postgres
+      - redis
+
+  rails:
+    <<: *backend
+    command: bundle exec rails server -b 0.0.0.0
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+      - redis
+      - webpacker
+
+  webpacker:
+    <<: *app
+    command: ./bin/webpack-dev-server
+    ports:
+      - '3035:3035'
+    volumes:
+      - .:/app:cached
+      - bundle:/bundle
+    environment:
+      NODE_ENV: development
+      RAILS_ENV: ${RAILS_ENV:-development}
+      WEBPACKER_DEV_SERVER_HOST: 0.0.0.0
+
+  postgres:
+    image: postgres:12
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - .docker/.psqlrc:/root/.psqlrc:ro
+      - ./log:/var/log/psql_history
+    ports:
+      - 5432
+
+  redis:
+    image: redis:4
+    volumes:
+      - redis:/data
+    ports:
+      - 6379
+
+volumes:
+  bundle:
+  postgres:
+  redis:
+  rails_cache:

@@ -1,0 +1,69 @@
+version: '4.1'
+
+interaction:
+  bash:
+    description: Open a Bash shell
+    service: backend
+    command: /bin/bash
+    compose_run_options: [no-deps]
+
+  bundle:
+    description: Run Bundler commands
+    service: backend
+    command: bundle
+
+  yarn:
+    description: Run Yarn commands
+    service: backend
+    command: yarn
+
+  rake:
+    description: Run Rake commands
+    service: backend
+    command: bundle exec rake
+
+  rails:
+    description: Run Rails commands
+    service: backend
+    command: bundle exec rails
+    subcommands:
+      s:
+        description: Run Rails server available at http://localhost:3000
+        service: rails
+        compose:
+          run_options: [service-ports, use-aliases]
+
+  sidekiq:
+    description: Run Sidekiq worker
+    service: backend
+    command: bundle exec sidekiq
+
+  rspec:
+    description: Run RSpec commands within test environment
+    service: backend
+    environment:
+      RAILS_ENV: test
+    command: bundle exec rspec
+
+  rubocop:
+    description: Lint ruby files
+    service: backend
+    command: bundle exec rubocop
+    compose:
+      run_options: [no-deps]
+
+  psql:
+    description: Open a Postgres console
+    service: postgres
+    default_args: evil_chat_development
+    command: psql -h postgres -U postgres
+
+  'redis-cli':
+    description: Open a Redis console
+    service: redis
+    command: redis-cli -h redis
+
+provision:
+  - dip compose down --volumes
+  - dip compose up -d postgres redis
+  - dip bash -c "./bin/setup"
