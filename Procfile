@@ -1,1 +1,1 @@
-server: bin/rails server
+web: bin/heroku-web
