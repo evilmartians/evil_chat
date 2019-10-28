@@ -18,6 +18,9 @@ gem 'redis', '~> 4.0'
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
+# Efficient ActionCable replacement to use web-sockets
+gem 'anycable-rails', '~> 0.6'
+
 # Use ActiveStorage variant
 # gem 'mini_magick', '~> 4.8'
 
@@ -31,6 +34,10 @@ group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'pry-rails'
+
+  # AnyCable Web Socket server
+  # Disabled. Gem is very unstable.
+  # gem "anycable-rack-server"
 end
 
 group :development do
