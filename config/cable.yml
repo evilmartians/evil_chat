@@ -1,5 +1,5 @@
 default: &default
-  adapter: <%= ENV.fetch('CABLE_ADAPTER', 'any_cable') %>
+  adapter: <%= ENV.fetch("CABLE_ADAPTER") { ENV["ANY_CABLE"] == "1" ? "any_cable" : "async" } %>
 
 development:
   <<: *default
