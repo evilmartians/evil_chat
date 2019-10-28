@@ -10,7 +10,7 @@ module ApplicationCable
     # By default we don't have access to the session object
     # https://edgeguides.rubyonrails.org/action_cable_overview.html#notes
     def session
-      cookies.encrypted[Rails.application.config.session_options[:key]]
+      cookies.encrypted[Rails.application.config.session_options[:key]] || {}
     end
   end
 end
