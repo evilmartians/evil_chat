@@ -37,7 +37,6 @@ services:
       REDIS_URL: redis://redis:6379/
       WEBPACKER_DEV_SERVER_HOST: webpacker
       DISABLE_SPRING: 1
-      ANY_CABLE: 1
     depends_on:
       postgres:
         condition: service_healthy

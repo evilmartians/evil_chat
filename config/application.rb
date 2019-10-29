@@ -27,8 +27,6 @@ module EvilChat
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
 
-    config.action_cable.url = ENV.fetch("CABLE_URL") { ENV["ANY_CABLE"] == "1" ? "ws://localhost:3334/cable" : nil }
-
     config.generators do |g|
       # Don't generate assets for Sprockets
       g.assets = nil
