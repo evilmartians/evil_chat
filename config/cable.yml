@@ -1,14 +1,10 @@
-default: &default
-  # List of the available adapters: async, any_cable
-  adapter: <%= ENV.fetch("CABLE_ADAPTER") { "any_cable" } %>
-
+# List of available adapters: async, any_cable
 development:
-  <<: *default
+  adapter: <%= ENV.fetch("CABLE_ADAPTER", "any_cable") %>
 
 test:
-  adapter: async
-  channel_prefix: evil_chat_test
+  adapter: test
 
 production:
-  <<: *default
+  adapter: <%= ENV.fetch("CABLE_ADAPTER", "any_cable") %>
   channel_prefix: evil_chat_production
