@@ -34,7 +34,9 @@ services:
       EDITOR: vim
       RAILS_ENV: ${RAILS_ENV:-development}
       DATABASE_URL: postgres://postgres:postgres@postgres:5432
-      REDIS_URL: redis://redis:6379/
+      REDIS_URL: redis://redis:6379/0
+      ANYCABLE_REDIS_URL: redis://redis:6379/0
+      ANYCABLE_RPC_HOST: 0.0.0.0:50051
       WEBPACKER_DEV_SERVER_HOST: webpacker
       DISABLE_SPRING: 1
     depends_on:
@@ -79,7 +81,7 @@ services:
       - '3334:3334'
     environment:
       PORT: 3334
-      REDIS_URL: redis://redis:6379/0
+      ANYCABLE_REDIS_URL: redis://redis:6379/0
       ANYCABLE_RPC_HOST: anycable-rpc:50051
     depends_on:
       - anycable-rpc

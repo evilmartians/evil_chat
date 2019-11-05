@@ -54,6 +54,6 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
-  # Specify AnyCable WebSocket server URL to make JS client connect to it
+  # Specify AnyCable WebSocket server URL to use by JS client
   config.action_cable.url = ENV.fetch("CABLE_URL", "ws://localhost:3334/cable").presence
 end
