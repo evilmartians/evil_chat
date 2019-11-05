@@ -4,6 +4,14 @@
 
 You need `docker` and `docker-compose` installed (for MacOS just use [official app](https://docs.docker.com/engine/installation/mac/)).
 
+### Linux users
+
+Linux users have a problem with file permissions. Files written in host volume created by root user in Docker containers are also owned by root on the host. Use Docker namespaces to map your host user to the container root.
+
+Guide how to fix - https://www.jujens.eu/posts/en/2017/Jul/02/docker-userns-remap/
+
+Docker docs - https://docs.docker.com/engine/security/userns-remap/
+
 ## Provisioning
 
 Run the following commands to prepare your Docker dev env:

@@ -1,17 +1,17 @@
-version: '3.4'
+version: '2.4'
 
 services:
   app: &app
     build:
       context: .
       dockerfile: ./Dockerfile
+      target: development
       args:
         RUBY_VERSION: '2.6'
-        PG_MAJOR: '10'
-        NODE_MAJOR: '11'
+        NODE_MAJOR: '12'
         BUNDLER_VERSION: '2.0.2'
         YARN_VERSION: '1.19.1'
-    image: brainwashing-dev:1.0.0
+    image: evil_chat-dev:1.0.0
     volumes:
       - .:/app:cached
     tmpfs:
@@ -38,8 +38,10 @@ services:
       WEBPACKER_DEV_SERVER_HOST: webpacker
       DISABLE_SPRING: 1
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   rails:
     <<: *backend
@@ -47,9 +49,12 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - postgres
-      - redis
-      - webpacker
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      webpacker:
+        condition: service_started
 
   webpacker:
     <<: *app
@@ -72,6 +77,9 @@ services:
       - ./log:/var/log/psql_history
     ports:
       - 5432
+    healthcheck:
+      test: pg_isready -U postgres -h 127.0.0.1
+      interval: 5s
 
   redis:
     image: redis:4
@@ -79,6 +87,11 @@ services:
       - redis:/data
     ports:
       - 6379
+    healthcheck:
+      test: redis-cli ping
+      interval: 1s
+      timeout: 3s
+      retries: 30
 
 volumes:
   bundle:
