@@ -88,6 +88,23 @@ services:
       - redis
 
   anycable-rpc:
+    image: nginx:1.17.3-alpine
+    volumes:
+      - ./log:/var/log/nginx
+      - ./config/anycable_nginx.conf:/etc/nginx/conf.d/anycable.conf
+    ports:
+      - '50051'
+    depends_on:
+      - anycable-rpc-one
+      - anycable-rpc-two
+
+  anycable-rpc-one:
+    <<: *backend
+    command: bundle exec anycable
+    ports:
+      - '50051'
+
+  anycable-rpc-two:
     <<: *backend
     command: bundle exec anycable
     ports:
