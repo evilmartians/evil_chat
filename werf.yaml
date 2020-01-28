@@ -1,0 +1,126 @@
+# название проекта, используется так же в шаблоне {{ .Chart.Name }}
+project: evil-chat
+configVersion: 1
+---
+# переменные с указанием нужных версий
+{{ $_ := set . "RUBY_VERSION" "2.6" }}
+{{ $_ := set . "BUNDLER_VERSION" "2.0.2" }}
+{{ $_ := set . "NODE_MAJOR" "12" }}
+{{ $_ := set . "YARN_VERSION" "1.19.1" }}
+---
+# базовый образ
+image: base
+from: ruby:{{ .RUBY_VERSION }}-slim-buster
+ansible:
+# на саммой ранней стадии - установим необходимые пакеты
+  beforeInstall:
+  - name: Add nodejs repository
+    shell: curl -sL https://deb.nodesource.com/setup_{{ .NODE_MAJOR }}.x | bash -
+  - name: Add yarn repository
+    shell: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+           && echo 'deb http://dl.yarnpkg.com/debian/ stable main' > /etc/apt/sources.list.d/yarn.list
+  - name: "Install the build dependencies"
+    apt:
+      pkg:
+      - build-essential
+      - gnupg2
+      - curl
+      - less
+      - vim
+      - git
+      - libpq-dev
+      - nodejs
+      - yarn={{ .YARN_VERSION }}-1
+      update_cache: yes
+      autoclean: yes
+# очистим кэш apt и удалим временные файлы для уменьшения размера образа
+  - name: Recursively remove directory apt archives
+    file:
+      path: "{{`{{ item }}`}}"
+      state: absent
+    with_items:
+      - /var/cache/apt/archives/*
+      - /var/lib/apt/lists/*
+      - /tmp/*
+      - /var/tmp/*
+  - name: Truncate logs
+    shell: truncate -s 0 /var/log/*log
+# добавим в систему bundler и пользователя от которого будет производиться запуск приложения
+  - name:
+    shell: gem update --system \
+           && gem install bundler:{{ .BUNDLER_VERSION }}
+  - name: Added ruby user
+    user:
+      name: ruby
+      shell: /bin/bash
+      home: /app
+---
+# образ с приложением который будем запускать в kubernetes
+# наследуется из базового образа
+image: rails
+fromImage: base
+# переменные для docker
+docker:
+  WORKDIR: /app
+  EXPOSE: '3000'
+  USER: ruby
+# подключаем к образу репозиторий с кодом приложения
+# на данной стадии поподают только файлы которые есть в коммите
+git:
+{{ include "(git) local git application files" . }}
+# настройка образа с помощью ansible
+ansible:
+  install:
+  - name: "Install bundle"
+    command: bundle install --without development test
+    args:
+      chdir: /app/
+  setup:
+  - name: "Precompile assets"
+    shell: rails assets:precompile
+    environment:
+      RAILS_MASTER_KEY: {{ env "RAILS_MASTER_KEY" }}
+      RAILS_ENV: production
+    become: yes
+    become_user: ruby
+    args:
+      chdir: /app/
+---
+# образ который будет выдавать подготовленную статику
+image: assets
+from: nginx
+ansible:
+  beforeInstall:
+# создадим файл nginx.conf
+  - name: Add nginx config
+    copy:
+      content: |
+{{ .Files.Get ".werf/nginx.conf" | indent 8 }}
+      dest: /etc/nginx/nginx.conf
+# импортируем сгенерированные assets из образа rails
+import:
+- image: rails
+  add: /app/public/packs
+  to: /www/packs
+  after: install
+
+# шаблон для многократного подключения к разным стадиям сборки
+{{- define "(git) local git application files" -}}
+- add: /
+  to: /app
+  owner: ruby
+  group: ruby
+  excludePaths:
+  - node_modules
+  - vendor
+  - .helm
+  stageDependencies:
+    install:
+    - Gemfile
+    - Gemfile.lock
+    beforeSetup:
+    - app
+    - frontend
+    - lib/*
+    - config/*
+{{- end -}}

@@ -1,0 +1,89 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+spec:
+  selector:
+    matchLabels:
+      service: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        service: {{ .Chart.Name }}
+    spec:
+      containers:
+      # контейнер с rails приложением
+      - name: rails
+        command: ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+        # werf при делое подставится нужный url до registry
+{{ tuple "rails" . | include "werf_container_image" | indent 8 }}
+        env:
+        # переменные образа
+{{ tuple "rails" . | include "werf_container_env" | indent 8 }}
+        # подстановка необходимых переменных согласно нужному окружению
+        - name: RAILS_MASTER_KEY
+          value: {{ .Values.rails.master_key}}
+        - name: RAILS_ENV
+          value: production
+        - name: RAILS_LOG_TO_STDOUT
+          value: "true"
+        - name: DATABASE_URL
+          value: "postgres://{{ first (pluck .Values.global.env .Values.postgresql.user) | default .Values.postgresql.user._default }}:{{ first (pluck .Values.global.env .Values.postgresql.password) | default .Values.postgresql.password._default }}@{{ first (pluck .Values.global.env .Values.postgresql.host) | default .Values.postgresql.host._default }}:5432"
+        - name: REDIS_URL
+          value: "redis://{{ first (pluck .Values.global.env .Values.redis.host )| default .Values.redis.host._default }}:6379/"
+        ports:
+        - containerPort: 3000
+          name: puma
+          protocol: TCP
+      # контейнер с nginx для отдачи статики
+      - name: assets
+{{ tuple "assets" . | include "werf_container_image" | indent 8 }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/sbin/nginx", "-s", "quit"]
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+            scheme: HTTP
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+            scheme: HTTP
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        env:
+{{ tuple "assets" . | include "werf_container_env" | indent 8 }}
+---
+# описание сервиса для rails приложения
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}-rails
+spec:
+  clusterIP: None
+  selector:
+    service: {{ .Chart.Name }}
+  ports:
+  - name: puma
+    port: 3000
+    protocol: TCP
+---
+# описание сервиса для отдачи assets через nginx
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}-assets
+spec:
+  clusterIP: None
+  selector:
+    service: {{ .Chart.Name }}
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
