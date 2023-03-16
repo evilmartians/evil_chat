@@ -88,7 +88,7 @@ GEM
       pry (>= 0.10.4)
     puma (3.12.6)
     racc (1.6.1)
-    rack (2.2.6.3)
+    rack (2.2.6.4)
     rack-proxy (0.6.5)
       rack
     rack-test (1.1.0)
