@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Chart.Name }}-pgsql
+spec:
+  serviceName: {{ .Chart.Name }}-pgsql
+  replicas: 1
+  selector:
+    matchLabels:
+      name: {{ .Chart.Name }}-pgsql
+  template:
+    metadata:
+      labels:
+        name: {{ .Chart.Name }}-pgsql
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:11
+        env:
+        - name: POSTGRES_USER
+          value: {{ first (pluck .Values.global.env .Values.postgresql.user) | default .Values.postgresql.user._default }}
+        - name: POSTGRES_PASSWORD
+          value: {{ first (pluck .Values.global.env .Values.postgresql.password) | default .Values.postgresql.password._default }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/etc/init.d/postgresql", "stop"]
+        ports:
+        - containerPort: 5432
+          name: pgsql
+          protocol: TCP
+        volumeMounts:
+        - name: pgsql
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: pgsql
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}-pgsql
+spec:
+  clusterIP: None
+  selector:
+    name: {{ .Chart.Name }}-pgsql
+  ports:
+  - name: pgsql
+    port: 5432
+    protocol: TCP

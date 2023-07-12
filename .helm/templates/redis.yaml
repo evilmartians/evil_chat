@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-redis
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      component: {{ .Chart.Name }}-redis
+  template:
+    metadata:
+      labels:
+        component: {{ .Chart.Name }}-redis
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: redis
+        image: redis:4-alpine
+        command:
+        - redis-server
+        ports:
+        - name: redis
+          containerPort: 6379
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector:
+    component: {{ .Chart.Name }}-redis
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379

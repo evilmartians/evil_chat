@@ -1,0 +1,16 @@
+rails:
+  master_key: 533269e346eb9fd9dc4adc9807749c03
+postgresql:
+  host:
+    prod: evil-chat-pgsql
+    _default: postgresql
+  user:
+    prod: evil_chat
+    _default: evil_chat
+  password:
+    prod: evil_chat_password
+    _default: evil_chat_password
+redis:
+  host:
+    prod: redis
+    _default: redis

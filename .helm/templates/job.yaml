@@ -1,0 +1,34 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Chart.Name }}-create-db
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: {{ .Chart.Name }}-create-db
+    spec:
+      initContainers:
+      - name: wait-postgres
+        image: postgres:11
+        command:
+          - "sh"
+          - "-c"
+          - "until pg_isready -h {{ pluck .Values.global.env .Values.postgresql.host | first | default .Values.postgresql.host._default }} -U {{ pluck .Values.global.env .Values.postgresql.user | first | default .Values.postgresql.user._default }}; do sleep 2; done;"
+      containers:
+      - name: rails
+{{ tuple "rails" . | include "werf_container_image" | indent 8 }}
+        command: ["bundle", "exec", "rake", "db:migrate"]
+        env:
+        - name: RAILS_MASTER_KEY
+          value: {{ .Values.rails.master_key}}
+        - name: RAILS_ENV
+          value: production
+        - name: DATABASE_URL
+          value: "postgres://{{ first (pluck .Values.global.env .Values.postgresql.user) | default .Values.postgresql.user._default }}:{{ first (pluck .Values.global.env .Values.postgresql.password) | default .Values.postgresql.password._default }}@{{ first (pluck .Values.global.env .Values.postgresql.host) | default .Values.postgresql.host._default }}:5432"
+{{ tuple "rails" . | include "werf_container_env" | indent 8 }}
+      restartPolicy: Never
