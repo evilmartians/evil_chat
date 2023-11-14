@@ -18,6 +18,9 @@ gem 'redis', '~> 4.0'
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
+# Efficient ActionCable replacement to use web-sockets
+gem 'anycable-rails', '~> 0.6', github: "anycable/anycable-rails", branch: "feature/rack-middleware"
+
 # Use ActiveStorage variant
 # gem 'mini_magick', '~> 4.8'
 

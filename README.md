@@ -16,16 +16,26 @@ If you are looking for code that reflects application at the end of any part, ta
 - [part-2 branch](https://github.com/demiazz/evil_chat/tree/part-2) for the Part 2;
 - [part-3 branch](https://github.com/demiazz/evil_chat/tree/part-3) for the Part 3.
 
-# Installation
+# Development installation
 
+## When using localhost machine
+
+```sh
+cp config/database.yml.example config/database.yml
+
+bundle install
+bin/rails db:migrate
+yarn install
+brew install hivemind
+brew install anycable-go
+hivemind Procfile.dev
 ```
-$ cp config/database.yml.example config/database.yml
 
-$ bin/rails credentials:edit
+## When using Docker Compose
 
-$ bundle install
-$ bin/rails db:migrate
-$ yarn install
-$ brew install hivemind
-$ hivemind Procfile.dev
+```sh
+brew install bibendi/dip/dip
+eval "$(dip console)"
+provision
+rails s
 ```

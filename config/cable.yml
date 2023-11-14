@@ -1,10 +1,11 @@
+# Make it possible to switch adapters by passing the CABLE_ADAPTER env variable.
+# For example, you can use it fallback to the standard Action Cable in staging/review
+# environments (by setting `CABLE_ADAPTER=redis`).
 development:
-  adapter: async
+  adapter: <%= ENV.fetch("CABLE_ADAPTER", "any_cable") %>
 
 test:
-  adapter: async
+  adapter: test
 
 production:
-  adapter: redis
-  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
-  channel_prefix: evil_chat_production
+  adapter: <%= ENV.fetch("CABLE_ADAPTER", "any_cable") %>

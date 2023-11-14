@@ -1,3 +1,12 @@
+GIT
+  remote: https://github.com/anycable/anycable-rails.git
+  revision: 59ebcbf9033725637b08dee5cbd5e26891dfc354
+  branch: feature/rack-middleware
+  specs:
+    anycable-rails (0.6.4)
+      anycable (~> 0.6.0)
+      rails (>= 5)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -42,6 +51,10 @@ GEM
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
+    anycable (0.6.3)
+      anyway_config (~> 1.4.2)
+      grpc (~> 1.17)
+    anyway_config (1.4.4)
     arel (9.0.0)
     bindex (0.8.1)
     bootsnap (1.4.4)
@@ -55,6 +68,12 @@ GEM
     ffi (1.11.1)
     globalid (0.4.2)
       activesupport (>= 4.2.0)
+    google-protobuf (3.10.1)
+    googleapis-common-protos-types (1.0.4)
+      google-protobuf (~> 3.0)
+    grpc (1.25.0)
+      google-protobuf (~> 3.8)
+      googleapis-common-protos-types (~> 1.0)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
     jbuilder (2.9.1)
@@ -155,6 +174,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  anycable-rails (~> 0.6)!
   bootsnap (>= 1.1.0)
   byebug
   jbuilder (~> 2.5)
